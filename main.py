@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 import uuid
+from pydantic import BaseModel
 
+
+class Log(BaseModel):
+    message : str
 
 app = FastAPI()
 
@@ -18,7 +22,7 @@ async def getLog(log_id: str):
         if log.get("id") == log_id:
             return log  
         
-@app.post("/addLog")
+@app.post("/addLog", status_code=201)
 async def addLog(message):
     newLog = {}
     newLog["id"] = uuid.uuid4()
@@ -27,3 +31,16 @@ async def addLog(message):
     logs.append(newLog)
     return newLog
 
+@app.delete("/deleteLog/{log_id}", status_code=204)
+async def deleteLog(log_id):
+    for log in logs:
+        if log.get("id") == log_id:
+            logs.remove(log)
+            return 
+        
+@app.put("/updateLog/{log_id}")
+async def updateLog(log_id: str, newMessage: Log):
+     for log in logs:
+            if log.get("id") == log_id:
+                log["message"] = newMessage
+            return
